@@ -5,47 +5,36 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovment : MonoBehaviour
 {
-    [SerializeField]
-    private float moveSpeed = 1f;
-    [SerializeField]
-    private float rotationSpeed = 10f; // Added rotation speed
+    Vector3 move;
+    Vector3 velocity;
 
-    private Vector2 moveVector;
-    private CharacterController characterController;
-    private Animator animator;
-
-    void Start()
-    {
-        characterController = GetComponent<CharacterController>();
-        animator = GetComponent<Animator>();
-    }
+    public float gravity = -9.81f;
+    public float speed = 5f;
+    public CharacterController controller;
+    public Animator animator; // Assign this in the Inspector if it's not on the same GameObject
 
     void Update()
     {
-        Move();
-    }
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
 
-    public void OnMove(InputAction.CallbackContext context)
-    {
-        moveVector = context.ReadValue<Vector2>();
+        move = transform.right * x + transform.forward * z;
 
-        // Update animation state
-        animator.SetBool("IsWalking", moveVector.magnitude > 0);
-    }
+        // Set animation state using "IsWalking" (capital I)
+        bool IsWalking = move.magnitude > 0.1f;
+        animator.SetBool("IsWalking", IsWalking);
+        Debug.Log("IsWalking: " + IsWalking);
 
-    private void Move()
-    {
-        // Convert moveVector (2D) to a 3D movement direction
-        Vector3 moveDirection = new Vector3(moveVector.x, 0f, moveVector.y);
-
-        if (moveDirection.magnitude > 0.1f) // Only rotate if there is movement
+        // Apply gravity
+        if (!controller.isGrounded)
         {
-            // Rotate towards movement direction smoothly
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            velocity.y += gravity * Time.deltaTime;
+        }
+        else
+        {
+            velocity.y = -2f;
         }
 
-        // Move player
-        characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
+        controller.Move((move * speed + velocity) * Time.deltaTime);
     }
 }

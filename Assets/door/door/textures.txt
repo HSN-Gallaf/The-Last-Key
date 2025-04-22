@@ -1,0 +1,2 @@
+wildtextures -> "belsõajtó"
+metal -> "külsõkilincs and kilincskeret"
